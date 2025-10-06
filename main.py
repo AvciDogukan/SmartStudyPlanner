@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Main Entry Point
-================
+Main Module
+===========
 
-This script serves as the entry point for the Smart Study Planner system.
+Entry point for the Smart Study Planner application.
 
-It demonstrates:
-- Creation of a User and Task objects
-- Dynamic injection of different Study Strategies (Pomodoro, DeepWork, Balanced)
-- Planner operations (add, filter, sort, execute)
+This script demonstrates the full OOP + Design Pattern architecture:
+- Uses Strategy Pattern to dynamically switch study behaviors.
+- Uses Factory Pattern to create strategy objects at runtime.
+- Demonstrates encapsulation, abstraction, and dependency injection
+  through the Planner, User, and Strategy relationships.
 
 Author:
     Doğukan Avcı
@@ -17,64 +18,62 @@ Created:
     2025-10-06
 """
 
-from core.user import User
-from core.task import Task
-from strategies.pomodoro_strategy import PomodoroStrategy
-from strategies.deepwork_strategy import DeepWorkStrategy
-from strategies.balanced_strategy import BalancedStrategy
-from core.planner import Planner
+# ----- Imports -----
+from core import User, Task, Planner
 from datetime import datetime
+from strategies.factory import StrategyFactory
 
 
 def main():
-    """Simulate usage of the Smart Study Planner system."""
+    """Main entry point for the Smart Study Planner simulation."""
 
     print("📘 SMART STUDY PLANNER INITIALIZING...\n")
 
-    # ----- 1️⃣ Create User -----
-    user = User(username="dogukanavci", email="dogukan@example.com")
-    print(f"👤 User created: {user.get_username()} ({user.get_email()})")
+    # ----- Create a user -----
+    user = User("dogukanavci", "dogukan@example.com")
+    print(f"👤 User created: {user.get_username()} ({user.get_email()})\n")
 
-    # ----- 2️⃣ Create Tasks -----
-    task1 = Task(taskid=1, priority=1, title="Finish AI homework",
-                 deadline=datetime(2025, 10, 10), duration=120, status="pending")
-    task2 = Task(taskid=2, priority=2, title="Prepare TEKNOFEST presentation",
-                 deadline=datetime(2025, 10, 12), duration=180, status="pending")
-    task3 = Task(taskid=3, priority=3, title="Update portfolio website",
-                 deadline=datetime(2025, 10, 14), duration=90, status="done")
+    # ----- Define initial tasks -----
+    tasks = [
+        Task(1, 1, "Finish AI homework", datetime(2025, 10, 10), 120, "pending"),
+        Task(2, 2, "Prepare TEKNOFEST presentation", datetime(2025, 10, 12), 90, "pending"),
+        Task(3, 3, "Update portfolio website", datetime(2025, 10, 15), 60, "done"),
+    ]
 
-    # ----- 3️⃣ Choose Strategy (Dependency Injection) -----
-    # Try different options here 👇
-    strategy = PomodoroStrategy()
-    # strategy = DeepWorkStrategy()
-    # strategy = BalancedStrategy()
+    print(f"🧩 Planner initialized with {len(tasks)} tasks.\n")
 
-    # ----- 4️⃣ Create Planner -----
-    planner = Planner(user=user, strategy=strategy, tasks=[task1, task2, task3])
-    print(f"\n🧩 Planner initialized with {len(planner.get_tasks())} tasks.")
+    # ----- Choose strategy via Factory Pattern -----
+    strategy_name = input("🎓 Choose study strategy (pomodoro / deepwork / balanced): ").strip()
+    try:
+        strategy = StrategyFactory.create(strategy_name)
+    except ValueError as e:
+        print(e)
+        return
 
-    # ----- 5️⃣ Task Operations -----
+    # ----- Initialize Planner with selected strategy -----
+    planner = Planner(user, strategy, tasks)
+
     print("\n📋 TASK OVERVIEW")
-    for t in planner.get_tasks():
-        print(f"- {t.get_title()} (Status: {t.get_status()}, Priority: {t.get_priority()})")
+    for task in planner.get_tasks():
+        print(f"- {task.get_title()} (Status: {task.get_status()}, Priority: {task.get_priority()})")
 
     stats = planner.show_stats()
-    print(f"\n📊 Task Stats → Done: {stats['done']} | Pending: {stats['pending']}")
+    print(f"\n📊 Task Stats → Done: {stats['done']} | Pending: {stats['pending']}\n")
 
-    # ----- 6️⃣ Apply Strategy -----
-    print("\n🚀 Starting Study Session:")
+    # ----- Execute selected strategy -----
+    print("🚀 Starting Study Session:\n")
     planner.execute_strategy()
 
-    # ----- 7️⃣ Filter Example -----
-    pending_tasks = planner.filter_tasks("pending")
-    print(f"\n🕒 Pending Tasks: {[t.get_title() for t in pending_tasks]}")
+    # ----- Task Management Demonstration -----
+    pending_tasks = [t.get_title() for t in planner.filter_tasks("pending")]
+    print(f"\n🕒 Pending Tasks: {pending_tasks}")
 
-    # ----- 8️⃣ Sort Example -----
-    sorted_by_priority = planner.sort_tasks(by_deadline=False)
-    print(f"\n⭐ Tasks Sorted by Priority: {[t.get_title() for t in sorted_by_priority]}")
+    sorted_tasks = [t.get_title() for t in planner.sort_tasks(by_deadline=False)]
+    print(f"\n⭐ Tasks Sorted by Priority: {sorted_tasks}")
 
     print("\n✅ Simulation Complete!")
 
 
+# ----- Entry Point -----
 if __name__ == "__main__":
     main()

@@ -11,10 +11,12 @@ from .strategy_base import StudyStrategy
 from .pomodoro_strategy import PomodoroStrategy
 from .deepwork_strategy import DeepWorkStrategy
 from .balanced_strategy import BalancedStrategy
+from .factory import StrategyFactory
 
 __all__ = [
     "StudyStrategy",
     "PomodoroStrategy",
     "DeepWorkStrategy",
     "BalancedStrategy",
+    "StrategyFactory",
 ]
