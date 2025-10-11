@@ -1,0 +1,1 @@
+Light,True,True,True,70,
